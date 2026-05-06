@@ -12,17 +12,22 @@ st.title("💰 Finanzas Familiares")
 # Conectar a Google Sheets
 conn = st.connection("gsheets", type=GSheetsConnection)
 
+# Nombre de la pestaña en tu Google Sheet
+NOMBRE_HOJA = "Gastos_Familiares"
+
 # Leer datos actuales
 try:
-    df = conn.read(worksheet="Gastos_Familiares", ttl=0) # ttl=0 para no usar caché y ver cambios en vivo
+    # ttl=0 para no usar caché y ver cambios en vivo
+    df = conn.read(worksheet=NOMBRE_HOJA, ttl=0) 
     df = df.dropna(how="all") # Limpiar filas vacías
 except Exception as e:
-    st.error("Error al leer el archivo. Verifica que la hoja se llame 'Hoja 1' y los secretos estén bien.")
+    st.error(f"Error al leer el archivo. Verifica que la pestaña de abajo en tu Google Sheet se llame exactamente '{NOMBRE_HOJA}' y que las credenciales estén bien.")
     st.stop()
 
-# Si el dataframe está vacío, creamos la estructura
-if df.empty:
-    df = pd.DataFrame(columns=["Fecha", "Tipo", "Categoría", "Monto", "Descripción", "Persona"])
+# Si el dataframe está vacío o le faltan columnas, creamos la estructura
+columnas_esperadas = ["Fecha", "Tipo", "Categoría", "Monto", "Descripción", "Persona"]
+if df.empty or len(df.columns) == 0:
+    df = pd.DataFrame(columns=columnas_esperadas)
 
 # Asegurar que el Monto sea numérico
 df["Monto"] = pd.to_numeric(df["Monto"], errors="coerce").fillna(0)
@@ -71,7 +76,7 @@ with tab1:
                 
                 # Unir y guardar
                 df_actualizado = pd.concat([df, nuevo_dato], ignore_index=True)
-                conn.update(worksheet="Hoja 1", data=df_actualizado)
+                conn.update(worksheet=NOMBRE_HOJA, data=df_actualizado)
                 st.success("¡Movimiento guardado exitosamente!")
                 st.rerun() # Recargar la página para actualizar gráficos
 
@@ -79,7 +84,7 @@ with tab1:
 with tab2:
     st.subheader("Resumen Financiero")
     
-    if not df.empty:
+    if not df.empty and df["Monto"].sum() > 0:
         # Calcular totales
         total_ingresos = df[df["Tipo"] == "Ingreso"]["Monto"].sum()
         total_gastos = df[df["Tipo"] == "Gasto"]["Monto"].sum()
@@ -118,14 +123,14 @@ with tab2:
 # ----------------- PESTAÑA 3: HISTORIAL -----------------
 with tab3:
     st.subheader("Últimos Movimientos")
-    if not df.empty:
+    if not df.empty and len(df) > 0:
         # Mostrar los últimos 15 registros, ordenados del más nuevo al más viejo
         st.dataframe(df.sort_values(by="Fecha", ascending=False).head(15), use_container_width=True)
         
         # Botón para borrar el último registro por si se equivocan
         if st.button("Eliminar último registro (Deshacer)"):
             df_actualizado = df[:-1] # Quita la última fila
-            conn.update(worksheet="Hoja 1", data=df_actualizado)
+            conn.update(worksheet=NOMBRE_HOJA, data=df_actualizado)
             st.success("Último registro eliminado.")
             st.rerun()
     else:
