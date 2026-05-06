@@ -14,7 +14,7 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 
 # Leer datos actuales
 try:
-    df = conn.read(worksheet="Hoja 1", ttl=0) # ttl=0 para no usar caché y ver cambios en vivo
+    df = conn.read(worksheet="Gastos_Familiares", ttl=0) # ttl=0 para no usar caché y ver cambios en vivo
     df = df.dropna(how="all") # Limpiar filas vacías
 except Exception as e:
     st.error("Error al leer el archivo. Verifica que la hoja se llame 'Hoja 1' y los secretos estén bien.")
