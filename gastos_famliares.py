@@ -46,7 +46,7 @@ with tab1:
             persona = st.selectbox("¿Quién?", ["Esposo", "Esposa", "Ambos"])
             monto = st.number_input("Monto ($)", min_value=0.0, step=100.0)
         
-        categorias_gasto = ["Supermercado", "Servicios", "Alquiler/Hipoteca", "Transporte", "Comida Fuera", "Entretenimiento", "Salud", "Ropa", "Otros"]
+        categorias_gasto = ["Supermercado", "Tasa Municipal","ARCA", "ATM", "Cuota Colegio", "Combustible", "Seguros", "Merienda Colegio","Farmacia" , "Alquiler/Hipoteca", "Comida Fuera", "Entretenimiento", "Salud", "Ropa","Salario",  "Otros"]
         categorias_ingreso = ["Sueldo", "Bono", "Ventas", "Otros"]
         
         if tipo == "Gasto":
